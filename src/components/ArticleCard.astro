@@ -1,0 +1,51 @@
+---
+import { useTranslations, localise, type Lang } from "../i18n/ui";
+import { bareId } from "../lib/content";
+import type { Article } from "../lib/content";
+
+interface Props { article: Article; lang: Lang; minutes: number }
+const { article, lang, minutes } = Astro.props;
+const t = useTranslations(lang);
+const { title, description, pubDate, tags } = article.data;
+const slug = bareId(article.id);
+const date = pubDate.toLocaleDateString(lang === "pt" ? "pt-BR" : "en-GB",
+  { year: "numeric", month: "short", day: "numeric" });
+---
+
+<article class="row">
+  <div class="meta">
+    <time datetime={pubDate.toISOString()}>{date}</time>
+    <span aria-hidden="true">·</span>
+    <span>{t("article.readingTime")(minutes)}</span>
+  </div>
+
+  <h2><a href={localise(lang, `/blog/${slug}`)}>{title}</a></h2>
+  <p class="desc">{description}</p>
+
+  {tags.length > 0 && (
+    <ul class="tags">
+      {tags.map((tag) => (
+        <li><a href={localise(lang, `/tags/${tag}`)}>{tag}</a></li>
+      ))}
+    </ul>
+  )}
+</article>
+
+<style>
+  .row { padding: var(--sp-5) 0; border-bottom: 1px solid var(--rule); }
+  .meta {
+    display: flex; gap: var(--sp-2); align-items: center;
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    color: var(--ink-3); margin-bottom: var(--sp-2);
+  }
+  h2 { font-size: var(--t-lg); margin-bottom: var(--sp-2); }
+  h2 a { color: var(--ink); text-decoration: none; }
+  h2 a:hover { color: var(--accent); }
+  .desc { color: var(--ink-2); margin: 0; max-width: var(--measure); }
+  .tags { list-style: none; display: flex; gap: var(--sp-2); flex-wrap: wrap; padding: 0; margin: var(--sp-3) 0 0; }
+  .tags a {
+    font-size: var(--t-xs); color: var(--ink-3); text-decoration: none;
+    background: var(--rule-2); padding: 0.15rem 0.5rem; border-radius: 99px;
+  }
+  .tags a:hover { color: var(--accent); }
+</style>

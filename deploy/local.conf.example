@@ -1,0 +1,4 @@
+# Copy to deploy/local.conf (gitignored) and fill in.
+SSH_HOST="user@host"           # or an ssh_config alias
+REMOTE_DIR="/var/www/blog"
+SITE_URL="https://example.com"

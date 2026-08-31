@@ -1,0 +1,117 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../../../../layouts/Base.astro";
+import { partsOf, readingTime, bareId } from "../../../../lib/content";
+import { useTranslations, localise } from "../../../../i18n/ui";
+
+export async function getStaticPaths() {
+  const all = await getCollection("series", (e) => import.meta.env.DEV || !e.data.draft);
+  return all
+    .filter((s) => s.data.lang === "pt")
+    .map((series) => ({ params: { series: bareId(series.id) }, props: { series } }));
+}
+
+const { series } = Astro.props;
+const lang = "pt" as const;
+const t = useTranslations(lang);
+const id = bareId(series.id);
+const parts = await partsOf(id, lang);
+
+// Render every part's body up front; this page is one document, not a list
+// of links, so all the content ships together.
+const rendered = await Promise.all(
+  parts.map(async (p) => ({ part: p, Content: (await render(p)).Content })),
+);
+const total = parts.reduce((sum, p) => sum + readingTime(p.body ?? ""), 0);
+---
+
+<Base
+  title={`${series.data.title} — ${t("series.index")}`}
+  description={series.data.description}
+  lang={lang}
+>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+
+  <div class="wrap">
+    <header class="prose lead">
+      <a class="back" href={localise(lang, `/series/${id}`)}>← {t("series.backTo")}</a>
+      <p class="mono-label">{t("series.label")} · {t("series.parts")(parts.length)} · {t("series.readAllTime")(total)}</p>
+      <h1>{series.data.title}</h1>
+      <p class="desc">{series.data.description}</p>
+    </header>
+
+    <!-- Floating index: jumps between parts without leaving the page. -->
+    <nav class="toc" aria-label={t("series.index")}>
+      <p class="mono-label">{t("series.index")}</p>
+      <ol>
+        {parts.map((p, i) => (
+          <li><a href={`#part-${p.data.part ?? i + 1}`}>
+            <span class="n">{p.data.part ?? i + 1}</span>{p.data.title}
+          </a></li>
+        ))}
+      </ol>
+    </nav>
+
+    <div class="stream">
+      {rendered.map(({ part, Content }, i) => (
+        <section class="part" id={`part-${part.data.part ?? i + 1}`}>
+          <p class="mono-label part-no">
+            {t("series.part")(part.data.part ?? i + 1, parts.length)}
+          </p>
+          <h2>{part.data.title}</h2>
+          <div class="prose"><Content /></div>
+        </section>
+      ))}
+    </div>
+  </div>
+</Base>
+
+<style>
+  .progress { position: sticky; top: 0; height: 2px; background: transparent; z-index: 5; }
+  #bar { height: 100%; width: 0; background: var(--accent); }
+
+  .lead { margin-bottom: var(--sp-6); }
+  .back { font-size: var(--t-sm); color: var(--ink-3); text-decoration: none; }
+  .back:hover { color: var(--accent); }
+  .desc { color: var(--ink-2); font-size: var(--t-md); }
+
+  .toc {
+    border: 1px solid var(--rule); border-radius: var(--radius);
+    background: var(--raise); padding: var(--sp-4);
+    margin-bottom: var(--sp-7); max-width: var(--measure);
+  }
+  .toc ol { list-style: none; padding: 0; margin: var(--sp-2) 0 0; }
+  .toc li { padding: var(--sp-1) 0; }
+  .toc a { color: var(--ink-2); text-decoration: none; display: flex; gap: var(--sp-3); }
+  .toc a:hover { color: var(--accent); }
+  .toc .n { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--accent); min-width: 1.2rem; }
+
+  .part { padding-top: var(--sp-7); scroll-margin-top: var(--sp-5); }
+  .part + .part { border-top: 1px solid var(--rule); margin-top: var(--sp-7); }
+  .part-no { color: var(--accent); }
+  .part h2 { font-size: var(--t-2xl); margin-bottom: var(--sp-5); }
+  .part :global(h2) { font-size: var(--t-lg); }
+  .part :global(h3) { font-size: var(--t-md); }
+
+  @media (min-width: 64rem) {
+    .toc {
+      position: sticky; top: var(--sp-5);
+      float: right; width: 15rem; margin-left: var(--sp-6);
+    }
+  }
+</style>
+
+<script>
+  // Progress reflects how far through the whole series you are.
+  const bar = document.getElementById("bar");
+  if (bar) {
+    const update = () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      bar.style.width = max > 0 ? `${(h.scrollTop / max) * 100}%` : "0%";
+    };
+    addEventListener("scroll", update, { passive: true });
+    addEventListener("resize", update);
+    update();
+  }
+</script>

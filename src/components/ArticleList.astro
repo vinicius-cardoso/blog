@@ -1,0 +1,41 @@
+---
+import ArticleCard from "./ArticleCard.astro";
+import SeriesCard from "./SeriesCard.astro";
+import { mainList, readingTime } from "../lib/content";
+import { useTranslations, type Lang } from "../i18n/ui";
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const entries = await mainList(lang);
+
+// Reading time needs the rendered body, which is async — resolve it up front
+// so the markup below stays declarative.
+const times = new Map<string, number>();
+for (const e of entries) {
+  const arts = e.kind === "article" ? [e.article] : e.parts;
+  for (const a of arts) times.set(a.id, readingTime(a.body ?? ""));
+}
+---
+
+<div class="list">
+  {entries.length === 0 && <p class="empty">{t("list.empty")}</p>}
+
+  {entries.map((e) =>
+    e.kind === "article" ? (
+      <ArticleCard article={e.article} lang={lang} minutes={times.get(e.article.id) ?? 1} />
+    ) : (
+      <SeriesCard
+        series={e.series}
+        parts={e.parts}
+        lang={lang}
+        minutes={e.parts.map((p) => times.get(p.id) ?? 1)}
+      />
+    ),
+  )}
+</div>
+
+<style>
+  .list { max-width: var(--page); }
+  .empty { color: var(--ink-3); font-style: italic; }
+</style>

@@ -1,0 +1,72 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import { partsOf, readingTime, bareId } from "../../../lib/content";
+import { useTranslations, localise } from "../../../i18n/ui";
+
+export async function getStaticPaths() {
+  const all = await getCollection("series", (e) => import.meta.env.DEV || !e.data.draft);
+  return all
+    .filter((s) => s.data.lang === "pt")
+    .map((series) => ({ params: { series: bareId(series.id) }, props: { series } }));
+}
+
+const { series } = Astro.props;
+const lang = "pt" as const;
+const t = useTranslations(lang);
+const id = bareId(series.id);
+const parts = await partsOf(id, lang);
+const minutes = parts.map((p) => readingTime(p.body ?? ""));
+const total = minutes.reduce((a, b) => a + b, 0);
+---
+
+<Base title={series.data.title} description={series.data.description} lang={lang}>
+  <div class="wrap prose">
+    <p class="mono-label">{t("series.label")} · {t("series.parts")(parts.length)}</p>
+    <h1>{series.data.title}</h1>
+    <p class="desc">{series.data.description}</p>
+
+    <a class="readall" href={localise(lang, `/series/${id}/all`)}>
+      {t("series.readAll")} · {t("series.readAllTime")(total)}
+    </a>
+
+    <ol class="parts">
+      {parts.map((p, i) => (
+        <li>
+          <span class="n">{t("series.part")(p.data.part ?? i + 1, parts.length)}</span>
+          <div>
+            <a href={localise(lang, `/blog/${bareId(p.id)}`)}>{p.data.title}</a>
+            <p>{p.data.description}</p>
+          </div>
+          <span class="mins">{t("article.readingTime")(minutes[i])}</span>
+        </li>
+      ))}
+    </ol>
+  </div>
+</Base>
+
+<style>
+  .desc { color: var(--ink-2); font-size: var(--t-md); }
+  .readall {
+    display: inline-block; margin: var(--sp-4) 0 var(--sp-6);
+    border: 1px dashed var(--accent); border-radius: var(--radius);
+    padding: var(--sp-3) var(--sp-5); color: var(--accent); text-decoration: none;
+  }
+  .readall:hover { background: var(--accent-bg); }
+  .parts { list-style: none; padding: 0; margin: 0; }
+  .parts li {
+    display: flex; gap: var(--sp-4); align-items: baseline;
+    padding: var(--sp-4) 0; border-bottom: 1px solid var(--rule);
+  }
+  .parts li > div { flex: 1; }
+  .parts a { color: var(--ink); text-decoration: none; font-weight: 500; }
+  .parts a:hover { color: var(--accent); }
+  .parts p { color: var(--ink-3); font-size: var(--t-sm); margin: var(--sp-1) 0 0; }
+  .n { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--accent);
+       flex: none; min-width: 6rem; }
+  .mins { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--ink-3); flex: none; }
+  @media (max-width: 34rem) {
+    .parts li { flex-wrap: wrap; gap: var(--sp-2); }
+    .n { min-width: 0; }
+  }
+</style>

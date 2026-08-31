@@ -1,0 +1,33 @@
+---
+import { getCollection, getEntry, render } from "astro:content";
+import ArticleLayout from "../../../layouts/Article.astro";
+import { readingTime, partsOf, translationOf, bareId } from "../../../lib/content";
+import { localise } from "../../../i18n/ui";
+
+export async function getStaticPaths() {
+  const all = await getCollection("articles", (e) => import.meta.env.DEV || !e.data.draft);
+  return all
+    .filter((a) => a.data.lang === "pt")
+    .map((article) => ({
+      params: { slug: bareId(article.id) },
+      props: { article },
+    }));
+}
+
+const { article } = Astro.props;
+const { Content } = await render(article);
+const minutes = readingTime(article.body ?? "");
+
+const series = article.data.series
+  ? await getEntry("series", `pt/${article.data.series}`)
+  : undefined;
+const parts = article.data.series ? await partsOf(article.data.series, "pt") : undefined;
+
+const twin = await translationOf(article, "en");
+const altPath = twin ? localise("en", `/blog/${bareId(twin.id)}`) : undefined;
+---
+
+<ArticleLayout article={article} lang="pt" minutes={minutes} altPath={altPath}
+               series={series} parts={parts}>
+  <Content />
+</ArticleLayout>

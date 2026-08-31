@@ -1,0 +1,63 @@
+---
+import { useTranslations, localise, type Lang } from "../i18n/ui";
+import { bareId } from "../lib/content";
+import type { Article, Series } from "../lib/content";
+
+/** Compact "Part 2 of 4" rail shown inside a single part, so a reader who
+    arrives from a search engine can find the rest of the series. */
+interface Props { series: Series; parts: Article[]; current: string; lang: Lang }
+const { series, parts, current, lang } = Astro.props;
+const t = useTranslations(lang);
+
+const i = parts.findIndex((p) => p.id === current);
+const prev = i > 0 ? parts[i - 1] : undefined;
+const next = i >= 0 && i < parts.length - 1 ? parts[i + 1] : undefined;
+const id = bareId(series.id);
+const slugOf = (a: Article) => bareId(a.id);
+---
+
+<nav class="rail" aria-label={t("series.label")}>
+  <div class="top">
+    <span class="pos">{t("series.part")(parts[i]?.data.part ?? i + 1, parts.length)}</span>
+    <a class="all" href={localise(lang, `/series/${id}/all`)}>{t("series.readAll")}</a>
+  </div>
+
+  <ol class="dots">
+    {parts.map((p, n) => (
+      <li class={p.id === current ? "on" : ""}>
+        <a href={localise(lang, `/blog/${slugOf(p)}`)} title={p.data.title}
+           aria-current={p.id === current ? "page" : undefined}>
+          <span class="sr">{p.data.title}</span>
+          <span aria-hidden="true">{p.data.part ?? n + 1}</span>
+        </a>
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .rail {
+    border: 1px solid var(--rule); border-radius: var(--radius);
+    background: var(--raise); padding: var(--sp-3) var(--sp-4);
+    margin-bottom: var(--sp-6); max-width: var(--measure);
+  }
+  .top { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; }
+  .pos {
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3);
+    margin-right: auto;
+  }
+  .all { font-size: var(--t-sm); color: var(--accent); text-decoration: none; }
+  .all:hover { text-decoration: underline; }
+
+  .dots { list-style: none; display: flex; gap: var(--sp-2); padding: 0; margin: var(--sp-3) 0 0; }
+  .dots a {
+    display: grid; place-items: center;
+    width: 1.75rem; height: 1.75rem; border-radius: 50%;
+    border: 1px solid var(--rule); color: var(--ink-3);
+    font-family: var(--font-mono); font-size: var(--t-xs); text-decoration: none;
+  }
+  .dots a:hover { border-color: var(--accent); color: var(--accent); }
+  .dots .on a { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+</style>

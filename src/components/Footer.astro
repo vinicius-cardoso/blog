@@ -1,0 +1,36 @@
+---
+import { useTranslations, type Lang } from "../i18n/ui";
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const year = new Date().getFullYear();
+---
+
+<footer>
+  <div class="inner">
+    <span>© {year} Vinícius Cardoso</span>
+    <a href="https://github.com/vinicius-cardoso/blog" rel="noopener" target="_blank">
+      {t("footer.source")}
+    </a>
+  </div>
+</footer>
+
+<style>
+  footer {
+    border-top: 1px solid var(--rule);
+    margin-top: var(--sp-8);
+    padding: var(--sp-5) 0;
+    color: var(--ink-3);
+    font-size: var(--t-sm);
+  }
+  .inner {
+    max-width: var(--page);
+    margin: 0 auto;
+    padding: 0 var(--sp-5);
+    display: flex;
+    gap: var(--sp-5);
+    flex-wrap: wrap;
+  }
+  a { color: var(--ink-3); }
+  a:hover { color: var(--accent); }
+</style>

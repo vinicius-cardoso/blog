@@ -1,0 +1,108 @@
+@import "./tokens.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+main { min-height: 60vh; }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  margin: 0 0 var(--sp-3);
+}
+h1 { font-size: var(--t-3xl); }
+h2 { font-size: var(--t-xl); }
+h3 { font-size: var(--t-lg); }
+
+p { margin: 0 0 var(--sp-4); }
+
+a { color: var(--accent); text-underline-offset: 0.15em; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+img, video { max-width: 100%; height: auto; }
+
+code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+:not(pre) > code {
+  background: var(--rule-2);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+pre {
+  background: var(--raise);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--sp-4);
+  overflow-x: auto;   /* wide code scrolls itself; the page never does */
+  line-height: 1.6;
+}
+
+blockquote {
+  margin: var(--sp-5) 0;
+  padding-left: var(--sp-4);
+  border-left: 3px solid var(--accent);
+  color: var(--ink-2);
+}
+
+hr { border: 0; border-top: 1px solid var(--rule); margin: var(--sp-6) 0; }
+
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--rule); }
+th { font-size: var(--t-sm); color: var(--ink-3); font-weight: 500; }
+
+/* Shared page shell */
+.wrap {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: var(--sp-7) var(--sp-5);
+}
+.prose { max-width: var(--measure); }
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: var(--sp-2) var(--sp-4);
+  z-index: 10;
+}
+.skip:focus { left: 0; }
+
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: var(--t-xs);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

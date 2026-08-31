@@ -1,0 +1,81 @@
+/* ---------------------------------------------------------------
+   Design tokens — palette "Warm Ink", type "Fraunces + Public Sans".
+   Chosen 31/08/2026. Every colour below was contrast-checked against
+   its own background: all pairs meet WCAG AA (worst case 4.66:1).
+
+   Light is defined on bare :root so the un-stamped default renders
+   correctly. Dark is declared twice on purpose: once for the OS
+   preference (guarded so an explicit light choice still wins) and
+   once for the explicit [data-theme="dark"] toggle.
+   --------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  --paper:      #fdfcfa;  /* page ground                        */
+  --raise:      #ffffff;  /* cards, code blocks                 */
+  --ink:        #1b1c1e;  /* body text          16.63:1 on paper */
+  --ink-2:      #4c5054;  /* secondary text                     */
+  --ink-3:      #6f7378;  /* muted / meta        4.66:1 on paper */
+  --accent:     #a8483c;  /* brick red           5.60:1 on paper */
+  --accent-ink: #ffffff;  /* text on accent fills               */
+  --accent-bg:  #f6e9e6;  /* accent-tinted surface              */
+  --rule:       #e6e2dc;  /* borders                            */
+  --rule-2:     #f0efec;  /* subtle fills                       */
+
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body:    "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale — 1.25 major third, 18px base for long-form reading */
+  --t-xs:   0.694rem;
+  --t-sm:   0.833rem;
+  --t-base: 1rem;
+  --t-md:   1.2rem;
+  --t-lg:   1.44rem;
+  --t-xl:   1.728rem;
+  --t-2xl:  2.074rem;
+  --t-3xl:  2.488rem;
+
+  --measure: 68ch;      /* running-text line length */
+  --page:    72rem;
+
+  --sp-1: .25rem;  --sp-2: .5rem;   --sp-3: .75rem;  --sp-4: 1rem;
+  --sp-5: 1.5rem;  --sp-6: 2rem;    --sp-7: 3rem;    --sp-8: 4rem;
+
+  --radius: 6px;
+}
+
+/* Dark — OS preference. Guarded so an explicit light choice beats a dark OS. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --paper:      #16161a;
+    --raise:      #1d1d22;
+    --ink:        #e8e4df;  /* 14.26:1 on paper */
+    --ink-2:      #b4b7bc;
+    --ink-3:      #8f9298;  /*  5.79:1 on paper */
+    --accent:     #e08a7a;  /*  6.95:1 — lifted toward clay, not the light red */
+    --accent-ink: #16161a;
+    --accent-bg:  #33211d;
+    --rule:       #2b2b31;
+    --rule-2:     #22222a;
+  }
+}
+
+/* Dark — explicit toggle. Wins over a light OS. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper:      #16161a;
+  --raise:      #1d1d22;
+  --ink:        #e8e4df;
+  --ink-2:      #b4b7bc;
+  --ink-3:      #8f9298;
+  --accent:     #e08a7a;
+  --accent-ink: #16161a;
+  --accent-bg:  #33211d;
+  --rule:       #2b2b31;
+  --rule-2:     #22222a;
+}

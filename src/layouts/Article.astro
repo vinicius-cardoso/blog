@@ -1,0 +1,96 @@
+---
+import Base from "./Base.astro";
+import { bareId } from "../lib/content";
+import SeriesRail from "../components/SeriesRail.astro";
+import { useTranslations, localise, type Lang } from "../i18n/ui";
+import type { Article, Series } from "../lib/content";
+
+interface Props {
+  article: Article;
+  lang: Lang;
+  minutes: number;
+  altPath?: string;
+  series?: Series;
+  parts?: Article[];
+}
+const { article, lang, minutes, altPath, series, parts } = Astro.props;
+const t = useTranslations(lang);
+const { title, description, pubDate, updatedDate, tags, draft } = article.data;
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString(lang === "pt" ? "pt-BR" : "en-GB",
+    { year: "numeric", month: "long", day: "numeric" });
+---
+
+<Base title={title} description={description} lang={lang} altPath={altPath}>
+  <article class="wrap">
+    <header class="head prose">
+      {draft && <p class="draft">{t("article.draft")}</p>}
+
+      {series && parts && (
+        <a class="series-link" href={localise(lang, `/series/${bareId(series.id)}`)}>
+          {t("series.label")} · {series.data.title}
+        </a>
+      )}
+
+      <h1>{title}</h1>
+
+      <div class="meta">
+        <time datetime={pubDate.toISOString()}>{fmt(pubDate)}</time>
+        <span aria-hidden="true">·</span>
+        <span>{t("article.readingTime")(minutes)}</span>
+        {updatedDate && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span>{t("article.updated")} {fmt(updatedDate)}</span>
+          </>
+        )}
+      </div>
+    </header>
+
+    {series && parts && (
+      <SeriesRail series={series} parts={parts} current={article.id} lang={lang} />
+    )}
+
+    <div class="prose body">
+      <slot />
+    </div>
+
+    {tags.length > 0 && (
+      <ul class="tags prose">
+        {tags.map((tag) => <li><a href={localise(lang, `/tags/${tag}`)}>{tag}</a></li>)}
+      </ul>
+    )}
+  </article>
+</Base>
+
+<style>
+  .head { margin-bottom: var(--sp-6); }
+  .draft {
+    display: inline-block; font-family: var(--font-mono); font-size: var(--t-xs);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: var(--accent); color: var(--accent-ink);
+    padding: 0.15rem 0.5rem; border-radius: 3px; margin-bottom: var(--sp-3);
+  }
+  .series-link {
+    display: inline-block; font-family: var(--font-mono); font-size: var(--t-xs);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); text-decoration: none; margin-bottom: var(--sp-3);
+  }
+  .series-link:hover { text-decoration: underline; }
+  h1 { font-size: var(--t-3xl); }
+  .meta {
+    display: flex; gap: var(--sp-2); flex-wrap: wrap;
+    font-family: var(--font-mono); font-size: var(--t-xs); color: var(--ink-3);
+  }
+  .body { margin-top: var(--sp-6); }
+  .body :global(h2) { margin-top: var(--sp-7); }
+  .body :global(h3) { margin-top: var(--sp-6); }
+  .body :global(img) { border-radius: var(--radius); }
+  .tags { list-style: none; display: flex; gap: var(--sp-2); flex-wrap: wrap;
+          padding: 0; margin: var(--sp-7) 0 0; }
+  .tags a {
+    font-size: var(--t-xs); color: var(--ink-3); text-decoration: none;
+    background: var(--rule-2); padding: 0.15rem 0.5rem; border-radius: 99px;
+  }
+</style>

@@ -1,0 +1,27 @@
+---
+import Base from "../layouts/Base.astro";
+import ArticleList from "../components/ArticleList.astro";
+---
+
+<Base
+  title="Vinícius Cardoso"
+  description="Personal projects, things I built and things I learned along the way."
+  lang="en"
+  altPath="/pt"
+>
+  <div class="wrap">
+    <div class="intro prose">
+      <h1>Writing</h1>
+      <p>
+        Notes on the things I build — mostly self-hosted infrastructure, small
+        tools, and whatever I broke learning something new.
+      </p>
+    </div>
+    <ArticleList lang="en" />
+  </div>
+</Base>
+
+<style>
+  .intro { margin-bottom: var(--sp-6); }
+  .intro p { color: var(--ink-2); font-size: var(--t-md); }
+</style>

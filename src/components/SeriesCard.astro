@@ -1,0 +1,102 @@
+---
+import { useTranslations, localise, type Lang } from "../i18n/ui";
+import { bareId } from "../lib/content";
+import type { Article, Series } from "../lib/content";
+
+interface Props {
+  series: Series;
+  parts: Article[];
+  lang: Lang;
+  /** Reading time per part, same order as `parts`. */
+  minutes: number[];
+}
+const { series, parts, lang, minutes } = Astro.props;
+const t = useTranslations(lang);
+const id = bareId(series.id);
+const total = minutes.reduce((a, b) => a + b, 0);
+---
+
+<article class="series">
+  <div class="head">
+    <span class="badge">{t("series.label")} · {t("series.parts")(parts.length)}</span>
+  </div>
+
+  <h2><a href={localise(lang, `/series/${id}`)}>{series.data.title}</a></h2>
+  <p class="desc">{series.data.description}</p>
+
+  <!-- The parts collapse behind a disclosure so a four-part series occupies
+       one row of the list instead of four. Open by default is deliberate on
+       desktop-width screens only; <details> keeps it usable without JS. -->
+  <details>
+    <summary>{t("series.index")}</summary>
+    <ol class="parts">
+      {parts.map((p, i) => {
+        const slug = bareId(p.id);
+        return (
+          <li>
+            <span class="n">{t("series.part")(p.data.part ?? i + 1, parts.length)}</span>
+            <a href={localise(lang, `/blog/${slug}`)}>{p.data.title}</a>
+            <span class="mins">{t("article.readingTime")(minutes[i])}</span>
+          </li>
+        );
+      })}
+    </ol>
+  </details>
+
+  <a class="readall" href={localise(lang, `/series/${id}/all`)}>
+    {t("series.readAll")} · {t("series.readAllTime")(total)}
+  </a>
+</article>
+
+<style>
+  .series {
+    padding: var(--sp-5);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--raise);
+    margin: var(--sp-5) 0;
+  }
+  .head { margin-bottom: var(--sp-2); }
+  .badge {
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-bg);
+    padding: 0.2rem 0.5rem; border-radius: 3px;
+  }
+  h2 { font-size: var(--t-lg); margin: var(--sp-2) 0; }
+  h2 a { color: var(--ink); text-decoration: none; }
+  h2 a:hover { color: var(--accent); }
+  .desc { color: var(--ink-2); max-width: var(--measure); }
+
+  summary {
+    cursor: pointer; color: var(--ink-3);
+    font-family: var(--font-mono); font-size: var(--t-xs);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: var(--sp-2) 0;
+  }
+  summary:hover { color: var(--accent); }
+
+  .parts { list-style: none; padding: 0 0 0 var(--sp-4); margin: var(--sp-2) 0 0;
+           border-left: 2px solid var(--rule); }
+  .parts li {
+    display: flex; align-items: baseline; gap: var(--sp-3);
+    padding: var(--sp-2) 0; border-bottom: 1px solid var(--rule-2);
+  }
+  .parts li:last-child { border-bottom: 0; }
+  .n { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--accent); flex: none; }
+  .parts a { color: var(--ink); text-decoration: none; flex: 1; }
+  .parts a:hover { color: var(--accent); }
+  .mins { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--ink-3); flex: none; }
+
+  .readall {
+    display: inline-block; margin-top: var(--sp-4);
+    border: 1px dashed var(--accent); border-radius: var(--radius);
+    padding: var(--sp-2) var(--sp-4); font-size: var(--t-sm);
+    color: var(--accent); text-decoration: none;
+  }
+  .readall:hover { background: var(--accent-bg); }
+
+  @media (max-width: 34rem) {
+    .parts li { flex-wrap: wrap; gap: var(--sp-2); }
+  }
+</style>
