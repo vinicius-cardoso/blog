@@ -15,6 +15,7 @@ export const ui = {
   en: {
     "nav.about": "About",
     "nav.github": "GitHub profile",
+    "nav.linkedin": "LinkedIn profile",
     "nav.home": "Articles",
     "nav.rss": "RSS feed",
 
@@ -49,6 +50,7 @@ export const ui = {
   pt: {
     "nav.about": "Sobre",
     "nav.github": "Perfil no GitHub",
+    "nav.linkedin": "Perfil no LinkedIn",
     "nav.home": "Artigos",
     "nav.rss": "Feed RSS",
 
