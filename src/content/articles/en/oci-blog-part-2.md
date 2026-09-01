@@ -40,3 +40,17 @@ the public site is just files on disk.
 
 That last point is the one I care about most. The failure modes are separate,
 which is worth more than any framework feature.
+
+## Publishing
+
+There is no admin page, and that was a deliberate subtraction. The repository
+is already the only place I can publish from, and it already has version
+history, diffs and rollback. An admin panel would have been a second, weaker
+way to do something git does better — plus a login form, a session cookie and
+a process running permanently on a server with under 1 GB of memory.
+
+So publishing is `git push`. A workflow builds the site and copies the result
+to the server, which never runs a build itself. The deploy key it uses can
+only write to one directory: it cannot open a shell, read anything back, or
+escape that path, so the worst a leaked key could do is overwrite pages that
+are regenerated on every push anyway.
