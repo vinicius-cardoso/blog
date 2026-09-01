@@ -34,6 +34,11 @@ Drafts (`draft: true`) are visible in `dev` and excluded from `build`.
 
 ## Content
 
+**Writing a post: see [WRITING.md](WRITING.md)** — frontmatter reference,
+how to publish in both languages, series, drafts, and what to check when a
+post does not show up. Copy `src/content/articles/<lang>/_template.md` to
+start a new one.
+
 ```
 src/content/
   articles/
@@ -44,29 +49,10 @@ src/content/
     pt/my-series.md
 ```
 
-### Article frontmatter
-
-```yaml
----
-title: "Reading the machine before writing any code"
-description: "One or two lines; used in listings, RSS and social cards."
-pubDate: 2026-08-31
-lang: "en"                    # en | pt
-translationOf: "my-article"   # bare id of the twin in the other language
-series: "oci-blog"            # optional — bare id of a file in series/
-part: 1                       # required if `series` is set
-tags: ["infra"]
-draft: false
----
-```
-
-`series` and `part` must be set together; the schema rejects one without the
-other. Series ids are bare (`oci-blog`), not language-prefixed — the language
-comes from the directory.
-
 ### How series work
 
-A series is not a special article type; it is a field on ordinary articles.
+A series is not a special article type; it is a field on ordinary articles
+(see [WRITING.md](WRITING.md) for the fields).
 That single field produces:
 
 - one collapsed entry on the main list, instead of one row per part
