@@ -41,6 +41,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "http://localhost").
     <link rel="alternate" type="application/rss+xml" title={title}
           href={lang === "pt" ? "/rss.pt.xml" : "/rss.xml"} />
 
+    <!-- SVG first: modern browsers prefer it and it can adapt to the reader's
+         theme. The .ico is the fallback for older browsers, which also request
+         /favicon.ico directly whether or not it is declared here. -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
     <!-- Fonts are self-hosted from /public/fonts: no request ever leaves for
          Google, and the site keeps working if their CDN is unreachable. -->
     <link rel="preload" href="/fonts/public-sans-400.woff2" as="font" type="font/woff2" crossorigin />

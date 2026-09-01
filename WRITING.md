@@ -188,3 +188,60 @@ Common causes:
 
 Nothing here can take the live site down: the server only ever receives a
 finished, verified build.
+
+---
+
+## Changing the favicon
+
+Everything lives in `public/`, and every file there is served at the site root.
+The current mark is a placeholder — a `v` in the accent colour — meant to be
+replaced.
+
+### If you have an SVG
+
+Replace `public/favicon.svg` with yours, then regenerate the raster sizes from
+it so they all stay in sync:
+
+```bash
+cd public
+rsvg-convert -w 180 -h 180 favicon.svg -o apple-touch-icon.png
+rsvg-convert -w 192 -h 192 favicon.svg -o icon-192.png
+rsvg-convert -w 512 -h 512 favicon.svg -o icon-512.png
+
+rsvg-convert -w 16 -h 16 favicon.svg -o /tmp/f16.png
+rsvg-convert -w 32 -h 32 favicon.svg -o /tmp/f32.png
+rsvg-convert -w 48 -h 48 favicon.svg -o /tmp/f48.png
+magick /tmp/f16.png /tmp/f32.png /tmp/f48.png favicon.ico
+```
+
+Needs `librsvg` and `imagemagick`. A favicon generator (below) does the same
+job in a browser if you would rather not install them.
+
+### The files, and what each is for
+
+| File | Used by |
+|---|---|
+| `favicon.svg` | Modern browsers. Preferred, and scales to any size |
+| `favicon.ico` | Older browsers; also requested directly at `/favicon.ico` |
+| `apple-touch-icon.png` | iOS home screen, 180×180 |
+| `icon-192.png`, `icon-512.png` | Android / PWA, referenced by the manifest |
+| `site.webmanifest` | App name and theme colour when installed |
+
+If you change the accent colour, update `theme_color` in `site.webmanifest`
+to match — it tints the browser chrome on mobile.
+
+### Then
+
+```bash
+git add public && git commit -m "favicon: new mark" && git push
+```
+
+Browsers cache favicons aggressively. Force a refresh with `Ctrl+Shift+R`, or
+open `https://vinilabs.cc/favicon.svg` directly to confirm the new one is live.
+
+### Designing at 16×16
+
+A favicon is mostly seen at 16 pixels. Detail disappears completely at that
+size, so the usual advice: one letter or one simple shape, high contrast,
+no thin strokes, no gradients, and no text beyond a single character. Design
+it small first and check it scales up — not the other way round.
