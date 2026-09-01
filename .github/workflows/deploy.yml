@@ -1,0 +1,74 @@
+name: Deploy
+
+# Publishing is a push to main. The site is static, so the build happens here
+# and the server only ever receives files — it has under 1 GB of RAM and no
+# build toolchain installed, which is deliberate.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "README.md"
+      - "deploy/README.md"
+      - ".gitignore"
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          SITE_URL: ${{ vars.SITE_URL || 'https://vinilabs.cc' }}
+        run: npm run build
+
+      - name: Guard against publishing an empty build
+        run: |
+          test -f dist/index.html || { echo "::error::dist/index.html missing"; exit 1; }
+          count=$(find dist -name '*.html' | wc -l)
+          echo "built $count HTML pages"
+          [ "$count" -ge 5 ] || { echo "::error::only $count pages built, expected >= 5"; exit 1; }
+
+      - name: Set up SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          KNOWN_HOSTS: ${{ secrets.KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Pinned host key: without this the first connection would trust
+          # whatever answers, which defeats the point of having a key at all.
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          # The server-side key is locked to rrsync on /var/www/blog, so the
+          # destination path is relative to that root, not absolute.
+          rsync -az --delete --human-readable \
+            -e "ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes" \
+            dist/ "$SSH_HOST:/"
+
+      - name: Verify the live site
+        run: |
+          sleep 3
+          code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 https://vinilabs.cc/)
+          echo "https://vinilabs.cc/ -> $code"
+          [ "$code" = "200" ] || exit 1
