@@ -5,8 +5,9 @@ that can be grouped into series and read either part-by-part or as one
 continuous page.
 
 The public site is **static HTML**: no server-side rendering, no Node process
-in production. A small admin service (see `admin/`) is the only thing that runs
-continuously, and it is reachable over Tailscale only.
+in production, and no admin panel. Publishing is `git push` — a GitHub Actions
+workflow builds the site and copies the result to the server, which never runs
+a build itself.
 
 ## Stack
 
@@ -14,7 +15,7 @@ continuously, and it is reachable over Tailscale only.
 |---|---|---|
 | Site | [Astro](https://astro.build) 7, static output | Public pages never change per visitor, so they compile to files |
 | Content | Markdown + frontmatter, in this repo | Version history for free; the writing is not trapped in a database |
-| Admin | Small Go binary (planned) | ~12 MB resident; a crash cannot take the blog down |
+| Publishing | GitHub Actions → rsync | git already gives version history, diffs and rollback; an admin panel would be a weaker second path |
 | Server | Caddy on a 1 GB OCI instance | Automatic HTTPS, replaces nginx + certbot |
 
 Node is a **build tool**, not a runtime. It runs where the build happens, not
@@ -107,7 +108,14 @@ dark-theme readers never see a white flash.
 
 Every colour pair meets WCAG AA in both themes.
 
-## Deploying
+## Publishing
 
-See `deploy/README.md`. In short: build locally, rsync `dist/` to the server,
-and let Caddy serve it. Nothing is built on the server.
+Push to `main`. `.github/workflows/deploy.yml` builds the site and rsyncs it to
+the server; nothing is built there. To publish from any device, edit a Markdown
+file on GitHub and commit — the workflow does the rest.
+
+`./deploy/deploy.sh` does the same thing from your laptop, if you'd rather not
+wait for Actions.
+
+The deploy key is confined server-side to `rrsync` on the web root: it cannot
+open a shell, read files, or escape that directory. See `deploy/README.md`.

@@ -5,17 +5,9 @@ dist/
 # dependencies
 node_modules/
 
-# environment — never commit. Holds the admin password hash, the session
-# secret and the real host/domain. This repo is public.
+# environment — never commit. This repo is public.
 .env
 .env.*
-!.env.example
-
-# admin runtime state
-admin/blog.db
-admin/blog.db-*
-admin/uploads/
-admin/bin/
 
 # local deploy config (server address lives here, not in the repo)
 deploy/local.conf

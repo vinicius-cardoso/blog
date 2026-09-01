@@ -6,13 +6,18 @@ be slow and risky.
 
 ## One-time server setup
 
-Not yet applied. Blocked on two things that need a human:
+Already applied. Recorded here so it can be reproduced on a new machine.
+
+Two steps happen outside the server and are easy to forget:
 
 1. **Open 80/443 in the OCI console** — VCN → Security Lists → Ingress Rules.
    The local firewall alone is not enough; OCI drops the traffic upstream
-   before it reaches the machine.
-2. **Point a domain at the server.** HTTPS needs a real hostname; Let's Encrypt
-   will not issue a certificate for a bare IP.
+   before it ever reaches the machine. Note the host also has a raw `REJECT`
+   rule ahead of the UFW chains, so new `iptables` rules must be inserted
+   *above* it or they never match.
+2. **Point the domain's A record at the server**, with any CDN proxying
+   disabled until the first certificate is issued — Let's Encrypt has to reach
+   the machine directly to validate.
 
 Then, on the server:
 
@@ -36,23 +41,42 @@ sudo apt update && sudo apt install -y caddy
 
 ## Configuration
 
-`deploy/Caddyfile` is a template. Copy it to the server and substitute the real
-domain — the domain is not committed here, because this repo is public.
+`deploy/Caddyfile` mirrors what is installed at `/etc/caddy/Caddyfile`. Caddy
+obtains and renews the certificate on its own — there is no certbot and no
+renewal cron job to forget.
 
-## Publishing
+Adding another project on a subdomain is a new block plus a DNS record; Caddy
+gets a separate certificate for it automatically.
+
+## Publishing from your laptop
 
 ```bash
 ./deploy/deploy.sh
 ```
 
-It builds locally, then rsyncs `dist/` to the server. `--delete` removes files
-that no longer exist in the build, so renamed articles do not linger.
+Builds locally, then rsyncs `dist/` to the server. `--delete` removes files
+that no longer exist in the build, so renamed articles do not linger. Reads
+`deploy/local.conf` (gitignored — it holds the server address).
 
-## Pulling content back
+## Publishing from GitHub
 
-Articles written in the admin live on the server. Sync them back into git so
-the writing is not stored in exactly one place, on a free-tier VM:
+Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds the
+site and rsyncs it here. Three repository secrets drive it:
 
-```bash
-./deploy/pull-content.sh
+| Secret | What it is |
+|---|---|
+| `DEPLOY_KEY` | Private half of a deploy-only SSH key |
+| `KNOWN_HOSTS` | The server's host key, pinned rather than trusted on first use |
+| `SSH_HOST` | `user@host` for the server |
+
+The matching public key is installed in `~/.ssh/authorized_keys` wrapped in
+`rrsync`, restricting it to writing under `/var/www/blog`:
+
 ```
+command="/usr/bin/rrsync -wo /var/www/blog",restrict ssh-ed25519 AAAA...
+```
+
+`-wo` means write-only, `restrict` disables port/agent forwarding and PTY
+allocation. A leaked key therefore cannot open a shell, read anything back, or
+escape the directory — the worst case is overwriting pages that the next push
+regenerates anyway. To revoke it, delete that line from `authorized_keys`.
