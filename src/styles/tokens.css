@@ -38,10 +38,10 @@
   --t-3xl:  2.488rem;
 
   /* Running-text line length. `ch` is the width of the "0" glyph, which in
-     Public Sans is narrower than the average lowercase letter — so 76ch is
-     roughly 78 characters of real text, landing inside the 60-75 comfort band
-     without the cramped column 68ch produced. */
-  --measure: 76ch;
+     Public Sans is narrower than the average lowercase letter — so 72ch is
+     roughly 75 characters of real text — the top of the 60-75 comfort band for
+     sustained reading, and far wider than the cramped column 68ch produced. */
+  --measure: 72ch;
   --page:    64rem;
 
   --sp-1: .25rem;  --sp-2: .5rem;   --sp-3: .75rem;  --sp-4: 1rem;
