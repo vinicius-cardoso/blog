@@ -91,6 +91,18 @@ const total = parts.reduce((sum, p) => sum + readingTime(p.body ?? ""), 0);
   .part + .part { border-top: 1px solid var(--rule); margin-top: var(--sp-7); }
   .part-no { color: var(--accent); }
   .part h2 { font-size: var(--t-2xl); margin-bottom: var(--sp-5); }
+  /* Match the single-article view: justified running text with hyphenation,
+     but never for code or headings. */
+  .part :global(.prose), .part > div {
+    text-align: justify; hyphens: auto; -webkit-hyphens: auto;
+  }
+  .part :global(pre), .part :global(code),
+  .part :global(kbd), .part :global(samp) {
+    text-align: left; hyphens: none; -webkit-hyphens: none;
+  }
+  .part :global(h2), .part :global(h3), .part :global(h4) {
+    text-align: left; hyphens: none;
+  }
   .part :global(h2) { font-size: var(--t-lg); }
   .part :global(h3) { font-size: var(--t-md); }
 

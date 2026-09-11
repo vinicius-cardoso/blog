@@ -38,10 +38,13 @@
   --t-3xl:  2.488rem;
 
   /* Running-text line length. `ch` is the width of the "0" glyph, which in
-     Public Sans is narrower than the average lowercase letter — so 72ch is
-     roughly 75 characters of real text — the top of the 60-75 comfort band for
-     sustained reading, and far wider than the cramped column 68ch produced. */
-  --measure: 72ch;
+     Public Sans is narrower than the average lowercase letter, so the ch value
+     overstates the real character count by roughly 6%. 78ch at the 18px body
+     size lands near 83 characters — a little past the classic 60-75 band, but
+     chosen deliberately to bring the column closer to the masthead. Filling
+     the shell entirely would need ~104ch (~111 characters), which is well past
+     the point where the eye loses the start of the next line. */
+  --measure: 78ch;
   --page:    64rem;
 
   --sp-1: .25rem;  --sp-2: .5rem;   --sp-3: .75rem;  --sp-4: 1rem;

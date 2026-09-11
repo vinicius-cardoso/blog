@@ -83,7 +83,30 @@ const fmt = (d: Date) =>
     display: flex; gap: var(--sp-2); flex-wrap: wrap;
     font-family: var(--font-mono); font-size: var(--t-xs); color: var(--ink-3);
   }
-  .body { margin-top: var(--sp-6); }
+  /* Justified running text. Without hyphenation this tears visible rivers of
+     whitespace, because the articles are full of unbreakable tokens — inline
+     code, paths, identifiers — that a line cannot split. `hyphens: auto` lets
+     ordinary words break; the code exclusions below keep identifiers intact. */
+  .body {
+    margin-top: var(--sp-6);
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+  /* Never justify or hyphenate anything code-shaped, or a path gets a hyphen
+     inserted into it and stops being copy-pasteable. */
+  .body :global(pre),
+  .body :global(code),
+  .body :global(kbd),
+  .body :global(samp) {
+    text-align: left;
+    hyphens: none;
+    -webkit-hyphens: none;
+  }
+  /* Headings stay ragged-right; justifying short lines looks broken. */
+  .body :global(h2),
+  .body :global(h3),
+  .body :global(h4) { text-align: left; hyphens: none; }
   .body :global(h2) { margin-top: var(--sp-7); }
   .body :global(h3) { margin-top: var(--sp-6); }
   .body :global(img) { border-radius: var(--radius); }

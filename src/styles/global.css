@@ -9,8 +9,8 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 1.0625rem;
-  line-height: 1.7;
+  font-size: 1.125rem;   /* 18px — the size the type scale was designed around */
+  line-height: 1.75;     /* wider column needs more leading to find the next line */
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
