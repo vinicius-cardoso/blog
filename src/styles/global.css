@@ -78,7 +78,13 @@ th { font-size: var(--t-sm); color: var(--ink-3); font-weight: 500; }
   margin: 0 auto;
   padding: var(--sp-7) var(--sp-5);
 }
-.prose { max-width: var(--measure); }
+/* Centre the reading column. Without `margin-inline: auto` the measure caps
+   the width but pins the text to the left of the wider .wrap, throwing all the
+   leftover space into one gutter on the right. */
+.prose {
+  max-width: var(--measure);
+  margin-inline: auto;
+}
 
 .skip {
   position: absolute;

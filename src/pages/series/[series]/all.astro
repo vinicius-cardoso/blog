@@ -79,6 +79,7 @@ const total = parts.reduce((sum, p) => sum + readingTime(p.body ?? ""), 0);
     border: 1px solid var(--rule); border-radius: var(--radius);
     background: var(--raise); padding: var(--sp-4);
     margin-bottom: var(--sp-7); max-width: var(--measure);
+    margin-inline: auto;   /* matches the centred .prose column; the float below overrides it */
   }
   .toc ol { list-style: none; padding: 0; margin: var(--sp-2) 0 0; }
   .toc li { padding: var(--sp-1) 0; }
@@ -96,7 +97,8 @@ const total = parts.reduce((sum, p) => sum + readingTime(p.body ?? ""), 0);
   @media (min-width: 64rem) {
     .toc {
       position: sticky; top: var(--sp-5);
-      float: right; width: 15rem; margin-left: var(--sp-6);
+      float: right; width: 15rem;
+      margin-inline: 0 0; margin-left: var(--sp-6);
     }
   }
 </style>

@@ -40,6 +40,7 @@ const slugOf = (a: Article) => bareId(a.id);
     border: 1px solid var(--rule); border-radius: var(--radius);
     background: var(--raise); padding: var(--sp-3) var(--sp-4);
     margin-bottom: var(--sp-6); max-width: var(--measure);
+    margin-inline: auto;   /* keep the rail aligned with the centred .prose column */
   }
   .top { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; }
   .pos {
