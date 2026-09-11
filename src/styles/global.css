@@ -49,6 +49,11 @@ code, kbd, samp {
   background: var(--rule-2);
   padding: 0.1em 0.35em;
   border-radius: 3px;
+  /* Inline code has no scroll container of its own, so a long unbreakable
+     token — a path, a dotted identifier — would otherwise force the whole
+     page to scroll sideways on a phone. Break it instead. */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 pre {
   background: var(--raise);
