@@ -37,3 +37,6 @@ vinilabs.cc, www.vinilabs.cc {
 # hinge.vinilabs.cc {
 # 	reverse_proxy localhost:8000
 # }
+
+# Per-project sites (e.g. Wiredex, deployed from its own repository).
+import /etc/caddy/sites/*.caddy
