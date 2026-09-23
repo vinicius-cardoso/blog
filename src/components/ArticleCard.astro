@@ -39,8 +39,10 @@ const date = pubDate.toLocaleDateString(lang === "pt" ? "pt-BR" : "en-GB",
     color: var(--ink-3); margin-bottom: var(--sp-2);
   }
   h2 { font-size: var(--t-lg); margin-bottom: var(--sp-2); }
-  h2 a { color: var(--ink); text-decoration: none; }
-  h2 a:hover { color: var(--accent); }
+  /* Accent at rest; hover drops to ink. Inverted from the usual direction
+     because the accent is no longer free to mean "hovered". */
+  h2 a { color: var(--accent); text-decoration: none; }
+  h2 a:hover { color: var(--ink); }
   .desc { color: var(--ink-2); margin: 0; max-width: var(--measure); }
   .tags { list-style: none; display: flex; gap: var(--sp-2); flex-wrap: wrap; padding: 0; margin: var(--sp-3) 0 0; }
   .tags a {

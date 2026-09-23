@@ -64,8 +64,10 @@ const total = minutes.reduce((a, b) => a + b, 0);
     padding: 0.2rem 0.5rem; border-radius: 3px;
   }
   h2 { font-size: var(--t-lg); margin: var(--sp-2) 0; }
-  h2 a { color: var(--ink); text-decoration: none; }
-  h2 a:hover { color: var(--accent); }
+  /* Accent at rest; hover drops to ink. Inverted from the usual direction
+     because the accent is no longer free to mean "hovered". */
+  h2 a { color: var(--accent); text-decoration: none; }
+  h2 a:hover { color: var(--ink); }
   .desc { color: var(--ink-2); max-width: var(--measure); }
 
   summary {

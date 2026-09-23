@@ -24,7 +24,14 @@ h1, h2, h3, h4 {
   letter-spacing: -0.02em;
   text-wrap: balance;
   margin: 0 0 var(--sp-3);
+  /* Headings carry the accent so the page has a second colour and the
+     section structure is visible while scanning. Checked against both
+     grounds in both themes: 5.60:1 light, 6.95:1 dark — AA either way. */
+  color: var(--accent);
 }
+/* h4 is rare and sits close to body copy; keeping it ink avoids a run of
+   small red lines competing with the text around it. */
+h4 { color: var(--ink); }
 h1 { font-size: var(--t-3xl); }
 h2 { font-size: var(--t-xl); }
 h3 { font-size: var(--t-lg); }
