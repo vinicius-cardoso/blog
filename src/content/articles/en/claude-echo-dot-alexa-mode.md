@@ -151,7 +151,8 @@ commands:
 
 It worked. But Piper has no female Brazilian voice, the male one sounded
 terrible, and I reverted the whole thing to English shortly after. The
-initial prompt stayed, translated into English.
+initial prompt stayed, translated into English. (Portuguese came back later,
+done properly: see below.)
 
 ## "Alexa, play" doesn't match "play"
 
@@ -341,6 +342,77 @@ picked on the phone now play on the Echo. According to the plugin's README, the
 player's own controls are proxied back to Spotify, so "Alexa, pause" should keep
 working while the phone is in control.
 
+## Portuguese, without touching English
+
+Once English worked, I wanted Portuguese back, with one condition: it couldn't
+make English worse. That ruled out the obvious approach. Letting Whisper
+auto-detect the language needs a multilingual model, and the English-only
+`small.en` was exactly what made English fast. And the Echo can't tell the two
+apart by wake word either, because the firmware only offers one:
+
+```
+select.echo_dot_5_09483f_wake_word   options: ['no_wake_word', 'Alexa']
+```
+
+So Portuguese became a **second, separate pipeline** that the Echo switches to
+by voice. Nothing in the English chain was edited: same Whisper container,
+same Claude agent, same automations. Portuguese got its own copy of each:
+
+| Piece | English (unchanged) | Portuguese (new) |
+|---|---|---|
+| Whisper | `small.en`, port 10300 | `medium-int8`, `pt`, port 10301 |
+| Claude agent | "Claude conversation" | "Claude PT", Portuguese prompt |
+| Voice | Piper `en_US-amy-medium` | Google Translate, `pt-br` |
+| Commands | "play / stop / next…" | "toca / pausa / próxima…" |
+
+The switch itself is one more sentence trigger, flipping the Echo's assistant
+setting:
+
+```yaml
+- trigger: conversation
+  id: pt
+  command:
+    - "[hey] [alexa] (speak|talk|switch to|change to|change language to|use) portuguese [please]"
+# ...and "[ei] [alexa] (fala|fale|muda para|troca para) inglês" for the way back
+actions:
+  - action: select.select_option
+    target: { entity_id: select.echo_dot_5_09483f_assistente }
+    data: { option: "{{ 'Claude PT' if trigger.id == 'pt' else 'Claude' }}" }
+```
+
+The setting lives on the Echo, so it stays in whichever language I left it,
+even after a restart.
+
+Choosing the Portuguese Whisper got the same benchmark treatment, on the spare
+port, with Piper's Brazilian voice reading the commands:
+
+| Model | Per command | What went wrong |
+|---|---|---|
+| small (multilingual), beam 1 | ~1.4 s | `'Próxima música' -> ' Pausa a música.'` |
+| **medium-int8, beam 1** | **~3.3 s** | only the English song title |
+| medium-int8, beam 5 | ~4.5 s | nothing better, just slower |
+
+The small model was fast and dangerous: it turned "next song" into "pause the
+music". "Pausa a música" was one of the examples in my own initial prompt, so
+the prompt most likely pulled it there. A speaker that pauses when you ask for
+the next song is worse than a slow one, so Portuguese pays 3.3 s per command
+and English keeps its 1.3 s.
+
+The voice was the other problem. Piper only has male Brazilian voices, and I'd
+already rejected one. Home Assistant's Google Translate integration has a
+female `pt-br` voice, so Portuguese uses that. The trade-off: it's cloud, not
+local. Since commands are silent anyway, I mostly hear it on answers.
+
+One small UI trap: I created the pipeline in storage with language `pt-BR`,
+and the settings dialog flagged it as "Unknown item". Its list only offers
+"Portuguese" (`pt`). The Brazilian part comes from the speech-to-text and voice
+settings, not from the pipeline language.
+
+Typed into Assist, the whole loop worked: "Alexa, speak Portuguese" →
+"Okay, Portuguese."; "toca Ice Melt do Crumb no volume 4" played it at 40%;
+"próxima música" skipped to a similar song; "fala inglês" switched back. And
+the English tests I ran before and after gave the same results.
+
 ## Where it ended up
 
 | | Before | After |
@@ -352,6 +424,7 @@ working while the phone is in control.
 | Memory | 5 minutes of history | fresh every time |
 | After the song | silence | similar music, "next" works |
 | Spotify app | can't reach the Echo | Echo is a Connect device |
+| Language | English only | English, or Portuguese on request |
 
 ## What I'm taking from this
 

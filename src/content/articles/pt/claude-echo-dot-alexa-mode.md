@@ -151,7 +151,8 @@ comandos de exemplo:
 
 Funcionou. Só que o Piper não tem voz feminina em português do Brasil, a
 masculina ficou horrível, e voltei tudo para inglês pouco depois. O initial
-prompt ficou, traduzido para inglês.
+prompt ficou, traduzido para inglês. (O português voltou depois, do jeito
+certo: veja mais abaixo.)
 
 ## "Alexa, play" não bate com "play"
 
@@ -341,6 +342,79 @@ escolhidas no celular agora tocam na Echo. Segundo o README do plugin, os
 controles do player são repassados de volta ao Spotify, então "Alexa, pause"
 deve continuar funcionando enquanto o celular está no comando.
 
+## Português, sem mexer no inglês
+
+Com o inglês funcionando, eu quis o português de volta, com uma condição: não
+podia piorar o inglês. Isso descartou o caminho óbvio. Deixar o Whisper
+detectar o idioma sozinho exige um modelo multilíngue, e o `small.en`, só de
+inglês, era justamente o que deixou o inglês rápido. E a Echo também não
+consegue separar os dois pela wake word, porque o firmware só oferece uma:
+
+```
+select.echo_dot_5_09483f_wake_word   options: ['no_wake_word', 'Alexa']
+```
+
+Então o português virou um **segundo pipeline, separado**, para o qual a Echo
+troca por voz. Nada da cadeia em inglês foi editado: mesmo container do
+Whisper, mesmo agente do Claude, mesmas automações. O português ganhou uma
+cópia própria de cada peça:
+
+| Peça | Inglês (intocado) | Português (novo) |
+|---|---|---|
+| Whisper | `small.en`, porta 10300 | `medium-int8`, `pt`, porta 10301 |
+| Agente do Claude | "Claude conversation" | "Claude PT", prompt em português |
+| Voz | Piper `en_US-amy-medium` | Google Translate, `pt-br` |
+| Comandos | "play / stop / next…" | "toca / pausa / próxima…" |
+
+A troca em si é só mais um sentence trigger, que muda a configuração de
+assistente da Echo:
+
+```yaml
+- trigger: conversation
+  id: pt
+  command:
+    - "[hey] [alexa] (speak|talk|switch to|change to|change language to|use) portuguese [please]"
+# ...and "[ei] [alexa] (fala|fale|muda para|troca para) inglês" for the way back
+actions:
+  - action: select.select_option
+    target: { entity_id: select.echo_dot_5_09483f_assistente }
+    data: { option: "{{ 'Claude PT' if trigger.id == 'pt' else 'Claude' }}" }
+```
+
+A configuração fica gravada na Echo, então ela continua no idioma em que eu a
+deixei, mesmo depois de reiniciar.
+
+A escolha do Whisper em português passou pelo mesmo benchmark, na porta
+separada, com a voz brasileira do Piper lendo os comandos:
+
+| Modelo | Por comando | O que deu errado |
+|---|---|---|
+| small (multilíngue), beam 1 | ~1.4 s | `'Próxima música' -> ' Pausa a música.'` |
+| **medium-int8, beam 1** | **~3.3 s** | só o nome da música em inglês |
+| medium-int8, beam 5 | ~4.5 s | nada melhor, só mais lento |
+
+O modelo small era rápido e perigoso: transformou "próxima música" em "pausa a
+música". "Pausa a música" era um dos exemplos do meu próprio initial prompt,
+então o mais provável é que o prompt tenha puxado ele para lá. Uma caixa que
+pausa quando você pede a próxima música é pior do que uma lenta, então o
+português paga 3.3 s por comando e o inglês continua com 1.3 s.
+
+A voz era o outro problema. O Piper só tem vozes masculinas em português do
+Brasil, e eu já tinha rejeitado uma. A integração Google Translate do Home
+Assistant tem uma voz feminina `pt-br`, então o português usa ela. O preço: é
+nuvem, não local. Como os comandos são silenciosos, eu ouço ela mais nas
+respostas.
+
+Uma pegadinha pequena na interface: criei o pipeline direto no storage com
+idioma `pt-BR`, e a tela de configurações marcou como "Unknown item". A lista
+dela só oferece "Portuguese" (`pt`). A parte brasileira vem das configurações de
+speech-to-text e de voz, não do idioma do pipeline.
+
+Digitando no Assist, o ciclo inteiro funcionou: "Alexa, speak Portuguese" →
+"Okay, Portuguese."; "toca Ice Melt do Crumb no volume 4" tocou em 40%;
+"próxima música" pulou para uma música parecida; "fala inglês" voltou. E os
+testes em inglês que rodei antes e depois deram os mesmos resultados.
+
 ## Como ficou
 
 | | Antes | Depois |
@@ -352,6 +426,7 @@ deve continuar funcionando enquanto o celular está no comando.
 | Memória | 5 minutos de histórico | do zero toda vez |
 | Depois da música | silêncio | músicas parecidas, "next" funciona |
 | App do Spotify | não alcança a Echo | Echo é um dispositivo Connect |
+| Idioma | só inglês | inglês, ou português quando eu peço |
 
 ## O que levo disso
 
