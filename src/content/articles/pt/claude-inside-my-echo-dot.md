@@ -4,6 +4,8 @@ description: "Soldar três fios num alto-falante trancado, um bug de assinatura 
 pubDate: 2026-11-25
 lang: "pt"
 translationOf: "claude-inside-my-echo-dot"
+series: "echo-claude"
+part: 1
 heroImage: "/echo-claude/hero-building.jpg"
 tags: ["hardware", "home-assistant", "ia", "engenharia-reversa", "linux"]
 ---

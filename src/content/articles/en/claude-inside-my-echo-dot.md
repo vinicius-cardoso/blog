@@ -4,6 +4,8 @@ description: "Soldering three wires to a locked speaker, a U-Boot signature bug,
 pubDate: 2026-11-25
 lang: "en"
 translationOf: "claude-inside-my-echo-dot"
+series: "echo-claude"
+part: 1
 heroImage: "/echo-claude/hero-building.jpg"
 tags: ["hardware", "home-assistant", "ai", "reverse-engineering", "linux"]
 ---
